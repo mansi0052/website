@@ -1,453 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>MyMovieVerse - Reviews</title>
-<style>
-  body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: #121212;
-    color: #eee;
-    margin: 0; padding: 0;
-    overflow-x: hidden;
-  }
-  .navbar {
-    background: #1f1f1f;
-    padding: 1rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.7);
-  }
-  .navbar .logo {
-    font-size: 1.5rem;
-    font-weight: 700;
-    user-select: none;
-  }
-  .nav-links {
-    list-style: none;
-    display: flex;
-    gap: 1.8rem;
-    margin: 0; padding: 0;
-  }
-  .nav-links li a {
-    color: #ccc;
-    font-weight: 600;
-    transition: color 0.3s ease;
-  }
-  .nav-links li a:hover,
-  .nav-links li a.active {
-    color: #ff9800;
-  }
-  main {
-    max-width: 900px;
-    margin: 3rem auto 4rem;
-    padding: 0 1rem 3rem;
-  }
-  h2 {
-    text-align: center;
-    color: #ffb347;
-    margin-bottom: 0.3rem;
-  }
-  .subtitle {
-    text-align: center;
-    margin-bottom: 2rem;
-    color: #aaa;
-  }
-  form {
-    background: #222;
-    padding: 2rem;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #ff980033;
-    margin-bottom: 3rem;
-    transition: all 0.4s ease;
-  }
-  label {
-    display: block;
-    margin-top: 1rem;
-    font-weight: 700;
-  }
-  input, select, textarea {
-    width: 100%;
-    padding: 0.6rem;
-    margin-top: 0.3rem;
-    background: #333;
-    color: #eee;
-    border: none;
-    border-radius: 8px;
-    font-size: 1rem;
-  }
-  textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-  .btn {
-    display: block;
-    margin: 2rem auto 0;
-    background: #ff9800;
-    color: white;
-    padding: 0.8rem 2.2rem;
-    border: none;
-    border-radius: 30px;
-    font-weight: 700;
-    cursor: pointer;
-    text-align: center;
-    transition: background-color 0.3s ease;
-    font-size: 1.1rem;
-  }
-  .btn:hover {
-    background: #e68a00;
-  }
-  #thankyou-message {
-    display: none;
-    text-align: center;
-    color: #ffb347;
-    font-size: 1.3rem;
-    font-weight: 700;
-    margin-bottom: 3rem;
-  }
-  #thankyou:target ~ #review-form {
-    display: none;
-  }
-  #thankyou:target ~ #thankyou-message {
-    display: block;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyMovieVerse</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 
-  /* Reviews grid */
-  .reviews-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit,minmax(160px,1fr));
-    gap: 1.5rem;
-    padding: 0 0.5rem;
-  }
-  .movie-poster {
-    position: relative;
-    cursor: pointer;
-    border-radius: 10px;
-    overflow: visible; /* Changed from hidden to visible */
-    box-shadow: 0 0 12px #ff980033;
-    background: #222;
-    border: 2px solid transparent;
-    transition: transform 0.3s ease, border-color 0.3s ease;
-    z-index: 10; /* base z-index */
-  }
-  .movie-poster:hover,
-  .movie-poster:focus-within {
-    transform: scale(1.05);
-    border-color: #ff9800;
-    z-index: 20; /* bring forward on hover/focus */
-  }
-  .movie-poster img {
-    width: 100%;
-    display: block;
-    border-radius: 10px;
-    user-select: none;
-  }
-  .movie-name {
-    position: absolute;
-    bottom: 0;
-    left: 0; right: 0;
-    padding: 0.5rem 0.7rem;
-    background: linear-gradient(0deg, #121212cc, transparent);
-    color: #ffb347;
-    font-weight: 700;
-    font-size: 1rem;
-    text-align: center;
-    user-select: none;
-  }
-
-  /* Popup container */
-  .reviews-popup {
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  width: 300px;
-  max-height: 360px;
-  background: rgba(34, 34, 34, 0.5);
-  color: #eee;
-  padding: 1rem 1.3rem;
-  border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(255, 152, 0, 0.6);
-  overflow-y: auto;
-  transform: translate(-50%, 20px);
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-  transition:
-    opacity 0.3s ease,
-    transform 0.3s ease,
-    visibility 0.3s;
-  z-index: 30;
-  margin-top: 8px;
-
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 152, 0, 0.25);
-}
-
-  /* Show popup on hover or focus-within */
-  .movie-poster:hover > .reviews-popup,
-  .movie-poster:focus-within > .reviews-popup {
-    opacity: 1;
-    visibility: visible;
-    pointer-events: auto;
-    transform: translate(-50%, 0);
-  }
-
-  /* Prevent popup flicker when moving cursor from poster to popup */
-  .reviews-popup:hover {
-    opacity: 1 !important;
-    visibility: visible !important;
-    pointer-events: auto !important;
-    transform: translate(-50%, 0) !important;
-  }
-
-  /* Scrollbar styling */
-  .reviews-popup::-webkit-scrollbar {
-    width: 6px;
-  }
-  .reviews-popup::-webkit-scrollbar-thumb {
-    background-color: #ff9800aa;
-    border-radius: 3px;
-  }
-  .reviews-popup::-webkit-scrollbar-track {
-    background-color: #333;
-  }
-
-  /* Single review style */
-  .single-review {
-    margin-bottom: 1rem;
-    border-bottom: 1px solid #444;
-    padding-bottom: 0.6rem;
-  }
-  .single-review:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-  .reviewer-name {
-    font-weight: 700;
-    color: #ffb347;
-    margin-bottom: 0.2rem;
-    font-size: 1rem;
-  }
-  .review-text {
-    font-size: 0.9rem;
-    color: #ccc;
-    line-height: 1.3;
-    margin-bottom: 0.3rem;
-  }
-
-  html, body {
-  height: 100%;
-  margin: 0;
-  padding: 0;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-}
-
-body {
-  background: linear-gradient(135deg, #3b5793, #121212 60%, #b43f3f);
-  background-attachment: fixed;
-  background-repeat: no-repeat;
-  background-size: cover;
-  color: #eee;
-  overflow-x: hidden;
-}
-
-
-
-  
-  .review-rating {
-    color: #ffb347;
-    font-size: 1rem;
-    user-select: none;
-  }
-
-  .E-mail{
-    font-weight: 700;
-    color: #ffb347;
-    margin-bottom: 0.2rem;
-    font-size: 1rem;
-  }
-
-  /* Responsive */
-  @media (max-width: 480px) {
-    .reviews-popup {
-      width: 90vw;
-      max-height: 280px;
-    }
-  }
-</style>
 </head>
+
+
 <body>
 
-<nav class="navbar">
+  <a id="top"></a>
+
+    <!-- THEME TOGGLE -->
+    <input type="checkbox" id="theme-toggle" hidden />
+<label for="theme-toggle" class="theme-toggle-label">🌞 Light / Dark 🌙</label>
+
+<div class="theme-wrapper"
+
+  <!-- Navigation Bar -->
+
+  <header>
+    <nav class="navbar">
   <div class="logo">🎬 MyMovieVerse</div>
+
+  <!-- Hamburger Menu Toggle -->
+  <input type="checkbox" id="menu-toggle" class="menu-toggle" />
+  <label for="menu-toggle" class="hamburger">
+    <span></span>
+    <span></span>
+    <span></span>
+  </label>
+
+  <!-- Navigation Links -->
   <ul class="nav-links">
-    <li><a href="index.html#hero">Home</a></li>
-    <li><a href="index.html#trending">Trending</a></li>
-    <li><a href="index.html#popular">Popular</a></li>
-    <li><a href="reviews.html" class="active">Reviews</a></li>
+    <li><a href="#hero">Home</a></li>
+    <li><a href="#trending">Trending</a></li>
+    <li><a href="#popular">Popular</a></li>
+    <li><a href="reviews.html">Reviews</a></li>
   </ul>
 </nav>
 
-<main>
-  <h2>Write Review Section</h2>
-  <p class="subtitle">Read and write your reviews here</p>
+  </header>
 
-  <div id="thankyou"></div>
+  <!-- Hero Section -->
 
-  <form id="review-form" action="#thankyou" method="get">
-    <label for="movie-name">Movie Name:</label>
-    <input type="text" id="movie-name" name="movie" required />
+  
+  <section id="hero" class="hero">
+    <div class="hero-left">
+      <h1>Welcome to MyMovieVerse</h1>
+      <p>Your gateway to discovering epic entertainment!</p>
+      <a href="#trending" class="btn">Explore Trending Movies</a>
+    </div>
+    <div class="hero-right">
+      <!-- Replace this with your own animated SVG -->
+      <img src="https://pnghq.com/wp-content/uploads/2023/02/movie-cinema-logo-png-7598.png" alt="Movie Illustration" class="animated-svg">
+    </div>
+  </section>
 
-    <label for="reviewer-name">Your Name:</label>
-    <input type="text" id="reviewer-name" name="name" required />
+  <!-- Trending Movies -->
 
-    <label for="rating">Rating:</label>
-    <select id="rating" name="rating" required>
-      <option value="">Select rating</option>
-      <option value="5">★★★★★</option>
-      <option value="4">★★★★</option>
-      <option value="3">★★★</option>
-      <option value="2">★★</option>
-      <option value="1">★</option>
-    </select>
 
-    <label for ="E-mail">Email:</label>
-    <input type="text" id="E-mail" name="mail" required />
+  
+  <!-- To be continued... -->
 
-    
-    <label for="review-text">Review:</label>
-    <textarea id="review-text" name="review" required></textarea>
 
-    <button type="submit" class="btn">Submit Review</button>
-  </form>
 
-  <div id="thankyou-message">
-    🎉 Thank you for submitting your review!
-  </div>
+<section id="trending" class="section">
+  <h1>Trending Movies</h1>
+  <p class="subtitle">Catch what’s buzzing around the world</p>
 
-  <section>
-    <h2 style="text-align:center; color:#ffb347; margin-bottom:1.2rem;">Movie Reviews Gallery</h2>
-    <div class="reviews-grid">
+  <div class="carousel">
+    <div class="carousel-track">
 
-      <!-- Oppenheimer -->
-      <div class="movie-poster" tabindex="0" aria-describedby="oppenheimer-popup">
-        <img src="https://m.media-amazon.com/images/I/81218n6JFgL.jpg" alt="Oppenheimer movie poster" />
-        <div class="movie-name">Oppenheimer</div>
-        <div class="reviews-popup" id="oppenheimer-popup" role="tooltip" aria-live="polite">
-          <div class="single-review">
-            <div class="reviewer-name">Anna B.</div>
-            <div class="review-text">Captivating and intense.</div>
-            <div class="review-rating">★★★★☆</div>
+      <!-- Movie 1 -->
+      <div class="movie-card">
+        <img src="https://cdna.artstation.com/p/assets/images/images/063/096/684/large/william-j-harris-oppenheimer-movie-poster-2023.jpg?1684720979" alt="Oppenheimer">
+        <div class="card-content">
+          <h3>Oppenheimer</h3>
+          <p>The atomic age begins...</p>
+          
+          <div class="duration-row">
+            <span class="duration">3h</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
           </div>
-          <div class="single-review">
-            <div class="reviewer-name">Mark T.</div>
-            <div class="review-text">A brilliant portrayal of history.</div>
-            <div class="review-rating">★★★★★</div>
+
+          <div class="card-actions">
+            <a href="https://www.peacocktv.com/stream-movies/oppenheimer" target="_blank" class="watch-btn">Watch Now</a>
           </div>
         </div>
       </div>
 
-      <!-- Spider-Man: Across the Spider-Verse -->
-      <div class="movie-poster" tabindex="0" aria-describedby="spiderman-popup">
-        <img src="https://m.media-amazon.com/images/I/81+HfwcH-lL.jpg" alt="Spider-Man Across the Spider-Verse movie poster" />
-        <div class="movie-name">Spider-Man: Across the Spider-Verse</div>
-        <div class="reviews-popup" id="spiderman-popup" role="tooltip" aria-live="polite">
-          <div class="single-review">
-            <div class="reviewer-name">Jane D.</div>
-            <div class="review-text">Visual masterpiece and thrilling story.</div>
-            <div class="review-rating">★★★★★</div>
+      <!-- Movie 2 -->
+      <div class="movie-card">
+        <img src="https://www.themoviedb.org/t/p/original/nCbkOyOMTEwlEV0LtCOvCnwEONA.jpg" alt="Interstellar">
+        <div class="card-content">
+          <h3>Interstellar</h3>
+          <p>Journey through space and time.</p>
+          
+          <div class="duration-row">
+            <span class="duration">2h 49m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
           </div>
-          <div class="single-review">
-            <div class="reviewer-name">Chris P.</div>
-            <div class="review-text">Loved the animation style and characters.</div>
-            <div class="review-rating">★★★★☆</div>
+
+          <div class="card-actions">
+            <a href="https://www.netflix.com/title/70305903" target="_blank" class="watch-btn">Watch Now</a>
           </div>
         </div>
       </div>
 
-      <!-- Black Panther: Wakanda Forever -->
-      <div class="movie-poster" tabindex="0" aria-describedby="blackpanther-popup">
-        <img src="https://m.media-amazon.com/images/I/81dae9nZFBS.jpg" alt="Black Panther Wakanda Forever movie poster" />
-        <div class="movie-name">Black Panther: Wakanda Forever</div>
-        <div class="reviews-popup" id="blackpanther-popup" role="tooltip" aria-live="polite">
-          <div class="single-review">
-            <div class="reviewer-name">Sam K.</div>
-            <div class="review-text">Emotionally powerful and visually stunning.</div>
-            <div class="review-rating">★★★★★</div>
+      <!-- Movie 3 -->
+      <div class="movie-card">
+        <img src="https://mir-s3-cdn-cf.behance.net/project_modules/max_1200/2a5bb2105168471.5f733bb4cec20.jpg" alt="Dune">
+        <div class="card-content">
+          <h3>Dune</h3>
+          <p>Epic sci-fi battle for desert power.</p>
+          
+          <div class="duration-row">
+            <span class="duration">2h 35m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
           </div>
-          <div class="single-review">
-            <div class="reviewer-name">Lily W.</div>
-            <div class="review-text">A worthy tribute with great action scenes.</div>
-            <div class="review-rating">★★★★☆</div>
+
+          <div class="card-actions">
+            <a href="https://www.hbo.com/movies/dune" target="_blank" class="watch-btn">Watch Now</a>
           </div>
         </div>
       </div>
 
-      <!-- Barbie -->
-      <div class="movie-poster" tabindex="0" aria-describedby="barbie-popup">
-        <img src="https://image.tmdb.org/t/p/original/dekMkQf0kqAmztUca9lX5e5Pjbp.jpg" alt="Barbie movie poster" />
-        <div class="movie-name">Barbie</div>
-        <div class="reviews-popup" id="barbie-popup" role="tooltip" aria-live="polite">
-          <div class="single-review">
-            <div class="reviewer-name">Ella G.</div>
-            <div class="review-text">Fun and colorful with great humor.</div>
-            <div class="review-rating">★★★★☆</div>
+      <!-- Movie 4 -->
+      <div class="movie-card">
+        <img src="https://th.bing.com/th/id/OIP.6UnlVbhxaVK9NeQQVn7f7wHaK_?rs=1&pid=ImgDetMain" alt="Joker">
+        <div class="card-content">
+          <h3>Joker</h3>
+          <p>A descent into madness.</p>
+          
+          <div class="duration-row">
+            <span class="duration">2h 2m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
           </div>
-          <div class="single-review">
-            <div class="reviewer-name">Mike S.</div>
-            <div class="review-text">Unexpectedly deep and entertaining.</div>
-            <div class="review-rating">★★★★☆</div>
-          </div>
-        </div>
-      </div>
 
-      <!-- Transformers: Rise of the Beasts -->
-      <div class="movie-poster" tabindex="0" aria-describedby="transformers-popup">
-        <img src="https://i.etsystatic.com/29534914/r/il/83cc80/5444842244/il_570xN.5444842244_km6b.jpg" alt="Transformers Rise of the Beasts movie poster" />
-        <div class="movie-name">Transformers: Rise of the Beasts</div>
-        <div class="reviews-popup" id="transformers-popup" role="tooltip" aria-live="polite">
-          <div class="single-review">
-            <div class="reviewer-name">Dave R.</div>
-            <div class="review-text">Explosive action and cool visuals.</div>
-            <div class="review-rating">★★★☆☆</div>
-          </div>
-          <div class="single-review">
-            <div class="reviewer-name">Nina H.</div>
-            <div class="review-text">A bit chaotic but fun for fans.</div>
-            <div class="review-rating">★★★☆☆</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Killers of the Flower Moon -->
-      <div class="movie-poster" tabindex="0" aria-describedby="killers-popup">
-        <img src="https://m.media-amazon.com/images/M/MV5BZWY5ZDVjNTUtODI5Yy00MjFhLWEyM2EtYzZjM2VjZTI0MTBjXkEyXkFqcGc@._V1_.jpg" alt="Killers of the Flower Moon movie poster" />
-        <div class="movie-name">Killers of the Flower Moon</div>
-        <div class="reviews-popup" id="killers-popup" role="tooltip" aria-live="polite">
-          <div class="single-review">
-            <div class="reviewer-name">Olivia M.</div>
-            <div class="review-text">Gripping story and outstanding acting.</div>
-            <div class="review-rating">★★★★★</div>
-          </div>
-          <div class="single-review">
-            <div class="reviewer-name">Jack F.</div>
-            <div class="review-text">Dark but necessary narrative.</div>
-            <div class="review-rating">★★★★☆</div>
+          <div class="card-actions">
+            <a href="https://www.hbo.com/movies/joker" target="_blank" class="watch-btn">Watch Now</a>
           </div>
         </div>
       </div>
 
     </div>
-  </section>
+  </div>
+</section>
 
-</main>
+  
+<section id="popular" class="section">
+  <h1>Popular Movies</h1>
+  <p class="subtitle">Movies loved by the audience</p>
 
+  <div class="carousel">
+    <div class="carousel-track">
+
+      <!-- Movie 1 -->
+      <div class="movie-card">
+        <img src="https://th.bing.com/th/id/OIP.2pShG-AHRJdjcFm-hRF8JAHaKN?rs=1&pid=ImgDetMain" alt="Avengers: Endgame">
+        <div class="card-content">
+          <h3>Avengers: Endgame</h3>
+          <p>The epic conclusion to the Infinity Saga.</p>
+          
+          <div class="duration-row">
+            <span class="duration">3h 1m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
+          </div>
+
+          <div class="card-actions">
+            <a href="https://www.disneyplus.com/movies/avengers-endgame/3QNb7XqNcKdV" target="_blank" class="watch-btn">Watch Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Movie 2 -->
+      <div class="movie-card">
+        <img src="https://www.themoviedb.org/t/p/original/qXsndsv3WOoxszmdlvTWeY688eK.jpg" alt="Frozen II">
+        <div class="card-content">
+          <h3>Frozen II</h3>
+          <p>The magical journey continues.</p>
+          
+          <div class="duration-row">
+            <span class="duration">1h 43m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
+          </div>
+
+          <div class="card-actions">
+            <a href="https://www.disneyplus.com/movies/frozen-ii/4dvJd8LL7lXI" target="_blank" class="watch-btn">Watch Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Movie 3 -->
+      <div class="movie-card">
+        <img src="https://www.themoviedb.org/t/p/original/gwv98uK5J7xEOgJ1Mmij1O22eVR.jpg" alt="Spider-Man: Into the Spider-Verse">
+        <div class="card-content">
+          <h3>Spider-Man: Into the Spider-Verse</h3>
+          <p>A new dimension of Spider-Men.</p>
+          
+          <div class="duration-row">
+            <span class="duration">1h 57m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
+          </div>
+
+          <div class="card-actions">
+            <a href="https://www.netflix.com/title/81027038" target="_blank" class="watch-btn">Watch Now</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Movie 4 -->
+      <div class="movie-card">
+        <img src="https://th.bing.com/th/id/OIP.5ahT4xY8YtYbp8QWFSaifQHaK-?rs=1&pid=ImgDetMain" alt="Top Gun: Maverick">
+        <div class="card-content">
+          <h3>Top Gun: Maverick</h3>
+          <p>The legendary pilot returns.</p>
+          
+          <div class="duration-row">
+            <span class="duration">2h 11m</span>
+            <label class="watchlist-toggle">
+              <input type="checkbox" />
+              <span class="toggle-icon"></span>
+            </label>
+          </div>
+
+          <div class="card-actions">
+            <a href="https://www.paramountplus.com/movies/top-gun-maverick/" target="_blank" class="watch-btn">Watch Now</a>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<footer class="simple-footer">
+  <div class="footer-content">
+    <div class="social-icons">
+      <a href="https://facebook.com" target="_blank"><i class="fab fa-facebook-f"></i></a>
+      <a href="https://twitter.com" target="_blank"><i class="fab fa-twitter"></i></a>
+      <a href="https://instagram.com" target="_blank"><i class="fab fa-instagram"></i></a>
+      <a href="https://linkedin.com" target="_blank"><i class="fab fa-linkedin-in"></i></a>
+    </div>
+
+    <div class="footer-links">
+      <a href="https://example.com/terms" target="_blank">Terms & Conditions</a>
+     
+    </div>
+
+  
+  </div>
+
+    <a href="#top" class="back-to-top">↑ Top</a>
+
+  
+</footer>
+</div>
 </body>
 </html>
